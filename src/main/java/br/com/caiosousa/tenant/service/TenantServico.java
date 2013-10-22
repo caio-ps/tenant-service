@@ -1,6 +1,5 @@
 package br.com.caiosousa.tenant.service;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,9 @@ import pessoa.service.exception.CamposInvalidosException;
 import pessoa.service.exception.Mensagens;
 import pessoa.service.exception.OperacaoNaoPermitidaException;
 import pessoa.service.exception.RegistroNaoEncontradoException;
+import tenant.enumeration.StatusTenant;
+import tenant.enumeration.TipoTenant;
+import tenant.model.ContadorTenants;
 import tenant.model.Tenant;
 
 @Component
@@ -23,66 +25,58 @@ public class TenantServico {
 	
 	public void cria(Tenant tenant) throws CamposInvalidosException, OperacaoNaoPermitidaException {
 		verificaSeTemPermissao();
-		validaCriacao(tenant);
+		validaCamposObrigatoriosParaCriacao(tenant);
+		tenant = adicionaValoresPadrao(tenant);
 		mongo.save(tenant);
+		// chama serviço de pessoa e cria os administradores do tenant
 	}
 	
 	public Tenant atualiza(Tenant tenant)
 			throws CamposInvalidosException, OperacaoNaoPermitidaException, RegistroNaoEncontradoException {
 		
-		verificaSeTemPermissao();
-		final Pessoa pessoaJaExistente = validaAtualizacao(pessoa);
-		final Pessoa pessoaAtualizada = preencheCamposParaAtualizar(pessoaJaExistente, pessoa);
-		mongo.save(pessoaAtualizada);
-		return buscaPorEmail(pessoaAtualizada.getEmail());
+		// verificaSeTemPermissao();
+		// final Pessoa pessoaJaExistente = validaAtualizacao(pessoa);
+		// final Pessoa pessoaAtualizada = preencheCamposParaAtualizar(pessoaJaExistente, pessoa);
+		// mongo.save(pessoaAtualizada);
+		// return buscaPorEmail(pessoaAtualizada.getEmail());
+		return null;
 		
 	}
 	
-	public List<Pessoa> buscaTodos() throws RegistroNaoEncontradoException {
+	public List<Tenant> buscaTodos() throws RegistroNaoEncontradoException, OperacaoNaoPermitidaException {
 		
-		List<Pessoa> pessoas = mongo.findAll(Pessoa.class);
+		verificaSeTemPermissao();
+		List<Tenant> tenants = mongo.findAll(Tenant.class);
 		
-		if (pessoas == null || pessoas.isEmpty()) {
+		if (tenants == null || tenants.isEmpty()) {
 			throw RegistroNaoEncontradoException.DEFAULT;
 		}
 		
-		return pessoas;
+		return tenants;
 		
 	}
 	
-	public Pessoa buscaPorEmail(String email) throws RegistroNaoEncontradoException {
+	public Tenant buscaPorCodigo(Long codigoTenant) throws RegistroNaoEncontradoException, OperacaoNaoPermitidaException {
 		
-		Query pessoaQuery = new Query(Criteria.where("email").is(email));
-		Pessoa pessoa = mongo.findOne(pessoaQuery, Pessoa.class);
+		verificaSeTemPermissao();
+		Query tenantQuery = new Query(Criteria.where("codigoTenant").is(codigoTenant));
+		Tenant tenant = mongo.findOne(tenantQuery, Tenant.class);
 		
-		if (pessoa == null) {
+		if (tenant == null) {
 			throw RegistroNaoEncontradoException.DEFAULT;
 		}
 		
-		return pessoa;
+		return tenant;
 		
 	}
 	
-	public Pessoa validaLogin(String email, String senha) throws RegistroNaoEncontradoException, OperacaoNaoPermitidaException {
+	public void exclui(Long codigoTenant) throws RegistroNaoEncontradoException, OperacaoNaoPermitidaException {
 		
 		verificaSeTemPermissao();
-		Query pessoaQuery = new Query(Criteria.where("email").is(email).and("senha").is(senha));
-		Pessoa pessoa = mongo.findOne(pessoaQuery, Pessoa.class);
-		
-		if (pessoa == null) {
-			throw RegistroNaoEncontradoException.DEFAULT;
-		}
-		
-		return pessoa;
-		
-	}
-	
-	public void exclui(String email) throws RegistroNaoEncontradoException, OperacaoNaoPermitidaException{
-		
-		verificaSeTemPermissao();
-		Pessoa pessoa = buscaPorEmail(email);
-		validaExclusao(pessoa);
-		// Chama o serviço de controle de tenants e desativa a pessoa no tenant corrente.
+		Tenant tenant = buscaPorCodigo(codigoTenant);
+		tenant.setStatus(StatusTenant.INATIVO);
+		mongo.save(tenant);
+		// Chama o serviço de pessoa e exclui todas as pessoas do tenant
 		
 	}
 
@@ -91,11 +85,11 @@ public class TenantServico {
 		final CamposInvalidosException camposInvalidos = 
 				new CamposInvalidosException();
 		
-		if (tenant.getEmail() == null || pessoa.getEmail().equals("")) {
-			camposInvalidos.addCampoInvalido(Mensagens.CAMPO_EMAIL_OBRIGATORIO);
+		if (tenant.getDescricao() == null || tenant.getDescricao().equals("")) {
+			camposInvalidos.addCampoInvalido(Mensagens.CAMPO_DESCRICAO_OBRIGATORIO);
 		}
 		
-		if (pessoa.getTenants() == null || pessoa.getTenants().isEmpty()) {
+		if (tenant.getAdministradores() == null || tenant.getAdministradores().isEmpty()) {
 			camposInvalidos.addCampoInvalido(Mensagens.PELO_MENOS_UM_TENANT_OBRIGATORIO);
 		}
 		
@@ -105,67 +99,35 @@ public class TenantServico {
 		
 	}
 
-	public boolean pessoaJaExiste(Pessoa novaPessoa) {
-		try {
-			buscaPorEmail(novaPessoa.getEmail());
-			return Boolean.TRUE;
-		} catch (RegistroNaoEncontradoException e) {
-			return Boolean.FALSE;
-		}
-		
-	}
-	
-	private void validaCriacao(Tenant tenant) throws CamposInvalidosException, OperacaoNaoPermitidaException {
-		validaCamposObrigatoriosParaCriacao(tenant);
-		if (pessoaJaExiste(pessoa)) {
-			throw OperacaoNaoPermitidaException.PESSOA_JA_EXISTE;
-		}
-	}
-	
-	private Pessoa validaAtualizacao(Pessoa pessoa) throws CamposInvalidosException, RegistroNaoEncontradoException {
-		
-		final CamposInvalidosException camposInvalidos = 
-				new CamposInvalidosException();
-		
-		if (pessoa.getEmail() == null || pessoa.getEmail().equals("")) {
-			camposInvalidos.addCampoInvalido(Mensagens.CAMPO_EMAIL_OBRIGATORIO);
-		}
-		
-		return buscaPorEmail(pessoa.getEmail());
-		
-	}
-	
-	private void validaExclusao(Pessoa pessoa) throws OperacaoNaoPermitidaException {
+	private Tenant adicionaValoresPadrao(Tenant tenant) {
+		final Long codigoDoProximoTenant = buscaCodigoProximoTenant();
 
-		/*
-		 * Valida se pode ser desativada do tenant em questão.
-		 */
+		tenant.setCodigoTenant(codigoDoProximoTenant);
+		tenant.setTipo(TipoTenant.FREE);
+		tenant.setStatus(StatusTenant.ATIVO);
+		tenant.setNumeroDePessoas(Long.valueOf(tenant.getAdministradores().size()));
+		
+		return tenant;
+	}
+
+	private Long buscaCodigoProximoTenant() {
+
+		ContadorTenants contadorTenantsAtual = null;
+		List<ContadorTenants> contadorTenants = mongo.findAll(ContadorTenants.class);
+		
+		if (contadorTenants == null) {
+			contadorTenantsAtual = new ContadorTenants();
+			contadorTenantsAtual.setCodigoUltimoTenant(1L);
+		} else {
+			contadorTenantsAtual = contadorTenants.get(0);
+			contadorTenantsAtual.setCodigoUltimoTenant(contadorTenantsAtual.getCodigoUltimoTenant() + 1);
+		}
+
+		mongo.save(contadorTenantsAtual);
+		return contadorTenantsAtual.getCodigoUltimoTenant();
 
 	}
-	
-	private Pessoa preencheCamposParaAtualizar(Pessoa pessoaJaExistente, Pessoa novosCampos) {
-		
-		/*
-		 * E-mail não pode ser alterado, pois é a chave primária
-		 */
-		for (Field campo : Pessoa.class.getDeclaredFields()) {
-			
-			try {
 
-				if (!campo.getName().equalsIgnoreCase("email")) {
-					campo.setAccessible(Boolean.TRUE);
-					campo.set(pessoaJaExistente, campo.get(novosCampos));
-				}
-				
-			} catch (Exception e) {
-			}
-			
-		}
-		
-		return pessoaJaExistente;
-		
-	}
-	
 	private void verificaSeTemPermissao() throws OperacaoNaoPermitidaException {
 		
 	}
