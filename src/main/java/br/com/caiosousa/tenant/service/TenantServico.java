@@ -8,14 +8,14 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
-import pessoa.service.exception.CamposInvalidosException;
-import pessoa.service.exception.Mensagens;
-import pessoa.service.exception.OperacaoNaoPermitidaException;
-import pessoa.service.exception.RegistroNaoEncontradoException;
-import tenant.enumeration.StatusTenant;
-import tenant.enumeration.TipoTenant;
-import tenant.model.ContadorTenants;
-import tenant.model.Tenant;
+import br.com.caiosousa.exception.CamposInvalidosException;
+import br.com.caiosousa.exception.Mensagens;
+import br.com.caiosousa.exception.OperacaoNaoPermitidaException;
+import br.com.caiosousa.exception.RegistroNaoEncontradoException;
+import br.com.caiosousa.tenant.enumeration.StatusTenant;
+import br.com.caiosousa.tenant.enumeration.TipoTenant;
+import br.com.caiosousa.tenant.model.ContadorTenants;
+import br.com.caiosousa.tenant.model.Tenant;
 
 @Component
 public class TenantServico {

@@ -6,6 +6,9 @@
         <dependent-module archiveName="tenant-data-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tenant-data/tenant-data">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="common-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/common/common">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="tenant-rest"/>
         <property name="java-output-path" value="/tenant-service/target/classes"/>
     </wb-module>
