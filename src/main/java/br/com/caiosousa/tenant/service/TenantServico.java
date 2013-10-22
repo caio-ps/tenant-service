@@ -1,7 +1,5 @@
 package br.com.caiosousa.tenant.service;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 
@@ -9,17 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
+import br.com.caiosousa.enumeration.Status;
 import br.com.caiosousa.exception.CamposInvalidosException;
 import br.com.caiosousa.exception.Mensagens;
 import br.com.caiosousa.exception.OperacaoNaoPermitidaException;
 import br.com.caiosousa.exception.RegistroNaoEncontradoException;
-import br.com.caiosousa.pessoa.service.model.PessoaJSON;
-import br.com.caiosousa.tenant.enumeration.StatusTenant;
 import br.com.caiosousa.tenant.enumeration.TipoTenant;
 import br.com.caiosousa.tenant.model.ContadorTenants;
 import br.com.caiosousa.tenant.model.Tenant;
@@ -40,16 +34,6 @@ public class TenantServico {
 	}
 
 	private void adicionaAdministradores(Long codigoTenant, Set<String> administradores) {
-
-		try {
-
-			RestTemplate pessoaRestTemplate = new RestTemplate();
-			HttpEntity<PessoaJSON> pessoa = pessoaRestTemplate.getForEntity(new URI("http://localhost:8080/rest/pessoa"), PessoaJSON.class);
-
-		} catch (RestClientException | URISyntaxException e) {
-
-		}
-		// pessoaRestTemplate.postForEntity(new URI(""), request, responseType)
 		// chama serviço de pessoa e cria os administradores do tenant
 	}
 	
@@ -96,7 +80,7 @@ public class TenantServico {
 		
 		verificaSeTemPermissao();
 		Tenant tenant = buscaPorCodigo(codigoTenant);
-		tenant.setStatus(StatusTenant.INATIVO);
+		tenant.setStatus(Status.INATIVO);
 		mongo.save(tenant);
 		// Chama o serviço de pessoa e exclui todas as pessoas do tenant
 		
@@ -126,7 +110,7 @@ public class TenantServico {
 
 		tenant.setCodigoTenant(codigoDoProximoTenant);
 		tenant.setTipo(TipoTenant.FREE);
-		tenant.setStatus(StatusTenant.ATIVO);
+		tenant.setStatus(Status.ATIVO);
 		tenant.setNumeroDePessoas(Long.valueOf(tenant.getAdministradores().size()));
 		
 		return tenant;

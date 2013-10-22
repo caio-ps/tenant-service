@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(basePackages = { "br.com.caiosousa.tenant.service", "br.com.caiosousa.tenant.spring" })
+@ComponentScan(basePackages = { "br.com.caiosousa.tenant.service", "br.com.caiosousa.spring" })
 @EnableAutoConfiguration
 public class Launcher {
 
