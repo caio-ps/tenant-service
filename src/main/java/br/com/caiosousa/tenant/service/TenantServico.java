@@ -1,4 +1,4 @@
-package pessoa.service;
+package br.com.caiosousa.tenant.service;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -9,25 +9,25 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
-import pessoa.model.Pessoa;
 import pessoa.service.exception.CamposInvalidosException;
 import pessoa.service.exception.Mensagens;
 import pessoa.service.exception.OperacaoNaoPermitidaException;
 import pessoa.service.exception.RegistroNaoEncontradoException;
+import tenant.model.Tenant;
 
 @Component
-public class PessoaServico {
+public class TenantServico {
 
 	@Autowired
 	MongoOperations mongo;
 	
-	public void cria(Pessoa pessoa) throws CamposInvalidosException, OperacaoNaoPermitidaException {
+	public void cria(Tenant tenant) throws CamposInvalidosException, OperacaoNaoPermitidaException {
 		verificaSeTemPermissao();
-		validaCriacao(pessoa);
-		mongo.save(pessoa);
+		validaCriacao(tenant);
+		mongo.save(tenant);
 	}
 	
-	public Pessoa atualiza(Pessoa pessoa)
+	public Tenant atualiza(Tenant tenant)
 			throws CamposInvalidosException, OperacaoNaoPermitidaException, RegistroNaoEncontradoException {
 		
 		verificaSeTemPermissao();
@@ -86,12 +86,12 @@ public class PessoaServico {
 		
 	}
 
-	public void validaCamposObrigatoriosParaCriacao(Pessoa pessoa) throws CamposInvalidosException {
+	public void validaCamposObrigatoriosParaCriacao(Tenant tenant) throws CamposInvalidosException {
 		
 		final CamposInvalidosException camposInvalidos = 
 				new CamposInvalidosException();
 		
-		if (pessoa.getEmail() == null || pessoa.getEmail().equals("")) {
+		if (tenant.getEmail() == null || pessoa.getEmail().equals("")) {
 			camposInvalidos.addCampoInvalido(Mensagens.CAMPO_EMAIL_OBRIGATORIO);
 		}
 		
@@ -115,8 +115,8 @@ public class PessoaServico {
 		
 	}
 	
-	private void validaCriacao(Pessoa pessoa) throws CamposInvalidosException, OperacaoNaoPermitidaException {
-		validaCamposObrigatoriosParaCriacao(pessoa);
+	private void validaCriacao(Tenant tenant) throws CamposInvalidosException, OperacaoNaoPermitidaException {
+		validaCamposObrigatoriosParaCriacao(tenant);
 		if (pessoaJaExiste(pessoa)) {
 			throw OperacaoNaoPermitidaException.PESSOA_JA_EXISTE;
 		}
