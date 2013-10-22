@@ -1,12 +1,15 @@
 package br.com.caiosousa.tenant.service;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import br.com.caiosousa.exception.CamposInvalidosException;
 import br.com.caiosousa.exception.Mensagens;
@@ -28,6 +31,12 @@ public class TenantServico {
 		validaCamposObrigatoriosParaCriacao(tenant);
 		tenant = adicionaValoresPadrao(tenant);
 		mongo.save(tenant);
+		
+	}
+
+	private void adicionaAdministradores(Long codigoTenant, Set<String> administradores) {
+		RestTemplate pessoaRestTemplate = new RestTemplate();
+		// pessoaRestTemplate.postForEntity(new URI(""), request, responseType)
 		// chama serviço de pessoa e cria os administradores do tenant
 	}
 	
@@ -90,7 +99,7 @@ public class TenantServico {
 		}
 		
 		if (tenant.getAdministradores() == null || tenant.getAdministradores().isEmpty()) {
-			camposInvalidos.addCampoInvalido(Mensagens.PELO_MENOS_UM_TENANT_OBRIGATORIO);
+			camposInvalidos.addCampoInvalido(Mensagens.PELO_MENOS_UM_ADMIN_OBRIGATORIO);
 		}
 		
 		if (camposInvalidos.getCamposInvalidos().size() > 0) {
