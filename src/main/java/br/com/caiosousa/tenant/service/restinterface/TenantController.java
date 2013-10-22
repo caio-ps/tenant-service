@@ -1,8 +1,19 @@
 package br.com.caiosousa.tenant.service.restinterface;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import br.com.caiosousa.exception.CamposInvalidosException;
+import br.com.caiosousa.exception.OperacaoNaoPermitidaException;
+import br.com.caiosousa.tenant.model.Tenant;
 import br.com.caiosousa.tenant.service.TenantServico;
 import br.com.caiosousa.tenant.service.model.ListaTenantJSON;
 import br.com.caiosousa.tenant.service.model.TenantJSON;
@@ -45,16 +56,16 @@ public class TenantController extends AbstractController<ListaTenantJSON, Tenant
 //        
 //    }
 //    
-//    @ResponseBody
-//    @RequestMapping(method = RequestMethod.POST, value="/pessoa")
-//    @ResponseStatus(value = HttpStatus.CREATED)
-//    public HttpEntity<TenantJSON> criaPessoa(@RequestBody Pessoa pessoa)
-//    		throws OperacaoNaoPermitidaException, CamposInvalidosException {
-//
-//    	pessoaServico.cria(pessoa);
-//    	return new ResponseEntity<TenantJSON>(adicionaLinksPermitidos(new TenantJSON(pessoa)), HttpStatus.OK);
-//    	
-//    }
+    @ResponseBody
+	@RequestMapping(method = RequestMethod.POST, value = "/tenant")
+    @ResponseStatus(value = HttpStatus.CREATED)
+	public HttpEntity<TenantJSON> criaPessoa(@RequestBody Tenant tenant)
+    		throws OperacaoNaoPermitidaException, CamposInvalidosException {
+
+		tenantServico.cria(tenant);
+		return new ResponseEntity<TenantJSON>(adicionaLinksPermitidos(new TenantJSON(tenant)), HttpStatus.CREATED);
+    	
+    }
 //    
 //    @ResponseBody
 //    @RequestMapping(method = RequestMethod.PUT, value="/pessoa")
