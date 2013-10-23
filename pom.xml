@@ -41,7 +41,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>tenant-rest</finalName>
+		<finalName>modulotenant</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
