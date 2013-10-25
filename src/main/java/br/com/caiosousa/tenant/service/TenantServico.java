@@ -121,7 +121,7 @@ public class TenantServico {
 		ContadorTenants contadorTenantsAtual = null;
 		List<ContadorTenants> contadorTenants = mongo.findAll(ContadorTenants.class);
 		
-		if (contadorTenants == null) {
+		if (contadorTenants == null || contadorTenants.isEmpty()) {
 			contadorTenantsAtual = new ContadorTenants();
 			contadorTenantsAtual.setCodigoUltimoTenant(1L);
 		} else {
